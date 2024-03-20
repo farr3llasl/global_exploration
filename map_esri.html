@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>ESRI Map Example</title>
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+  <h2>Global Exploration</h2>
+
+    <!--Make a form with country action and get method-->
+    <form action="/get_data" method="get">
+
+        <!--Make a select feature to choose the countries-->
+        <label for="country">Select a country to view its location and data:</label><br>
+        <label for="country">Country:</label><br>
+        <select name="country" id="country">
+
+            <!--Add an option on start-up for when countries are not selected -->
+            <!--Use jinja to implement a Python if statement-->
+            {% if country == 'default' %}
+            <option value=""default" selected dsiabled>Choose a country</option>
+            {% else %}
+            <option value="{{country}}">{{country}}</option>
+            {% endif %}
+
+            {% for country in countries %}
+                <option value="{{ country }}" {% if selected_country==country %}selected enabled{% endif %}>{{ country }}</option>
+            {% endfor %}
+
+        </select>
+        <input type="submit" value="Update">
+
+    </form> <br>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.28/"></script>
+  <script>
+
+  require([
+    "esri/config",
+    "esri/Map",
+    "esri/views/MapView",
+
+    "esri/Graphic",
+    "esri/layers/GraphicsLayer"
+
+    ], function(esriConfig,Map, MapView, Graphic, GraphicsLayer) {
+
+  const map = new Map({
+    basemap: "satellite" // basemap styles service
+  });
+
+  const view = new MapView({
+    map: map,
+    center: [0,0], //Longitude, latitude
+    zoom: 2,
+    container: "viewDiv"
+ });
+
+ const graphicsLayer = new GraphicsLayer();
+ map.add(graphicsLayer);
+
+ const point = { //get a point from loncation.logitude, location.latitude
+    type: "point",
+    longitude: location.longitude,    
+    latitude: location.latitude
+ };
+ const simpleMarkerSymbol = {
+    type: "simple-marker",
+    color: [226, 119, 40],  // Orange
+    outline: {
+        color: [255, 255, 255], // White
+        width: 1
+    }
+ };
+
+ const pointGraphic = new Graphic({
+    geometry: point,
+    symbol: simpleMarkerSymbol
+ });
+ graphicsLayer.add(pointGraphic);
+
+
+ view.openPopup({
+            location: point,
+            title: '{{ chosen_country}}',   //  get the country_name and population
+            content: '<b>Population:</b> {{location.population}}'
+          });
+
+ });
+
+</script>
+</head>
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>
